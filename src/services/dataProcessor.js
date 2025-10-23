@@ -1,11 +1,11 @@
 import { prisma } from "../lib/prisma.js";
-import { fetchTipoParametros } from "./apiService.js";
+import { getTipoParametrosFromStationId } from "./apiService.js";
 
 export async function processDocument(doc, mongoCollection) {
   const { uid, uxt, readings } = doc;
   console.log(`[${uid}] Processando documento ${doc._id}...`);
 
-  const tiposParametro = await fetchTipoParametros(uid);
+  const tiposParametro = await getTipoParametrosFromStationId(uid);
   if (!tiposParametro) {
     return;
   }
