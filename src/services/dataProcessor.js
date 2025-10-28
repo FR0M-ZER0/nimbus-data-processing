@@ -27,6 +27,21 @@ export async function processDocument(doc, mongoCollection) {
   };
   sendWsMessage(processingMessage);
 
+  const API = process.env.API_URL
+  try {
+    const response = await fetch(API, { method: "POST" });
+    if (response.ok) {
+      console.log(`📤 [${uid}] Log de processamento enviado à API com sucesso.`);
+    } else {
+      const text = await response.text();
+      console.error(
+        `❌ [${uid}] Falha ao enviar log à API: ${response.status} - ${text}`
+      );
+    }
+  } catch (err) {
+    console.error(`🌐 [${uid}] Erro ao comunicar com a API:`, err.message);
+  }
+
   const tiposParametro = await getTipoParametrosFromStationId(uid);
   if (!tiposParametro) {
     return;
