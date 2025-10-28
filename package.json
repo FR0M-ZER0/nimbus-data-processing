@@ -9,8 +9,14 @@
     "prisma": "^6.15.0",
     "ws": "^8.18.3"
   },
+    "scripts": {
+    "test": "vitest run --coverage --reporter=junit --outputFile=./test-results.xml --environment=node"
+  },
   "type": "module",
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "@vitest/coverage-v8": "^4.0.4",
+    "jsdom": "^27.0.1",
+    "nodemon": "^3.1.10",
+    "vitest": "^4.0.4"
   }
 }
