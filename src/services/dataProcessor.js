@@ -29,7 +29,13 @@ export async function processDocument(doc, mongoCollection) {
 
   const API = process.env.API_URL
   try {
-    const response = await fetch(API, { method: "POST" });
+      const response = await fetch(API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
     if (response.ok) {
       console.log(`📤 [${uid}] Log de processamento enviado à API com sucesso.`);
     } else {
