@@ -1,9 +1,52 @@
 import { prisma } from "../lib/prisma.js";
 import { getTipoParametrosFromStationId } from "./apiService.js";
+import WebSocket from "ws";
+
+const WS_URL = process.env.WS_URL
+const ws = new WebSocket(WS_URL)
+
+function sendWsMessage(message) {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(message));
+  } else {
+    console.warn('WebSocket não está pronto. Ignorando envio de mensagem...');
+  }
+}
 
 export async function processDocument(doc, mongoCollection) {
   const { uid, uxt, readings } = doc;
   console.log(`[${uid}] Processando documento ${doc._id}...`);
+
+  const timestamp = new Date().toISOString();
+  const processingMessage = {
+    type: 'PROCESSING_LOG',
+    dataProcessingLog: {
+      id_estacao: uid,
+      created_at: timestamp
+    }
+  };
+  sendWsMessage(processingMessage);
+
+  const API = process.env.API_URL
+  try {
+      const response = await fetch(API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
+    if (response.ok) {
+      console.log(`📤 [${uid}] Log de processamento enviado à API com sucesso.`);
+    } else {
+      const text = await response.text();
+      console.error(
+        `❌ [${uid}] Falha ao enviar log à API: ${response.status} - ${text}`
+      );
+    }
+  } catch (err) {
+    console.error(`🌐 [${uid}] Erro ao comunicar com a API:`, err.message);
+  }
 
   const tiposParametro = await getTipoParametrosFromStationId(uid);
   if (!tiposParametro) {
