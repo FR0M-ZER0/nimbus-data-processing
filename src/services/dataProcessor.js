@@ -1,9 +1,31 @@
 import { prisma } from "../lib/prisma.js";
 import { getTipoParametrosFromStationId } from "./apiService.js";
+import WebSocket from "ws";
+
+const WS_URL = process.env.WS_URL
+const ws = new WebSocket(WS_URL)
+
+function sendWsMessage(message) {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(message));
+  } else {
+    console.warn('WebSocket não está pronto. Ignorando envio de mensagem...');
+  }
+}
 
 export async function processDocument(doc, mongoCollection) {
   const { uid, uxt, readings } = doc;
   console.log(`[${uid}] Processando documento ${doc._id}...`);
+
+  const timestamp = new Date().toISOString();
+  const processingMessage = {
+    type: 'PROCESSING_LOG',
+    dataProcessingLog: {
+      id_estacao: uid,
+      created_at: timestamp
+    }
+  };
+  sendWsMessage(processingMessage);
 
   const tiposParametro = await getTipoParametrosFromStationId(uid);
   if (!tiposParametro) {
