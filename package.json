@@ -10,7 +10,7 @@
     "ws": "^8.18.3"
   },
     "scripts": {
-    "test": "vitest run --coverage --reporter=junit --outputFile=./test-results.xml --environment=jsdom"
+    "test": "vitest run --coverage --reporter=junit --outputFile=./test-results.xml --environment=node"
   },
   "type": "module",
   "devDependencies": {
