@@ -1,15 +1,187 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id_usuario      Int             @id @default(autoincrement())
+  nome            String          @db.VarChar(255)
+  email           String          @unique @db.VarChar(255)
+  senha           String          @db.VarChar(255)
+  id_nivel_acesso Int
+  data_criacao    DateTime        @default(now())
+  ativo           Boolean?
+  alarmes         Alarme[]
+  alertaUsuarios  AlertaUsuario[]
+  estacoes        Estacao[]
+  nivel_acesso    NivelAcesso     @relation(fields: [id_nivel_acesso], references: [id_nivel_acesso])
+
+  @@map("usuarios")
+}
+
+model NivelAcesso {
+  id_nivel_acesso Int       @id @default(autoincrement())
+  descricao       String    @db.VarChar(50)
+  usuarios        Usuario[]
+
+  @@map("nivel_acesso")
+}
+
+model Estacao {
+  id_estacao    String          @id @db.VarChar(255)
+  nome          String          @db.VarChar(255)
+  endereco      String?         @db.VarChar(255)
+  latitude      Decimal         @db.Decimal(10, 8)
+  longitude     Decimal         @db.Decimal(10, 8)
+  descricao     String?
+  data_criacao  DateTime        @default(now()) @db.Timestamp(6)
+  id_usuario    Int
+  usuario       Usuario         @relation(fields: [id_usuario], references: [id_usuario])
+  estacaoLog    EstacaoLog[]
+  estacaoStatus EstacaoStatus[]
+  parametros    Parametro[]
+
+  @@map("estacao")
+}
+
+model TipoParametro {
+  id_tipo_parametro Int         @id @default(autoincrement())
+  nome              String      @unique @db.VarChar(100)
+  unidade           String      @db.VarChar(20)
+  fator             Int?
+  polinomio         String?     @db.VarChar(50)
+  offset            Int?
+  json              Json?       @db.Json
+  parametros        Parametro[]
+
+  @@map("tipo_parametro")
+}
+
+model Parametro {
+  id_parametro      Int           @id @default(autoincrement())
+  id_estacao        String
+  id_tipo_parametro Int
+  descricao         String?
+  alertas           Alerta[]
+  medidas           Medida[]
+  estacao           Estacao       @relation(fields: [id_estacao], references: [id_estacao])
+  tipo_parametro    TipoParametro @relation(fields: [id_tipo_parametro], references: [id_tipo_parametro])
+
+  @@map("parametro")
+}
+
+model Medida {
+  id_medida    Int       @id @default(autoincrement())
+  id_parametro Int
+  valor        Decimal   @db.Decimal(10, 2)
+  data_hora    BigInt
+  alarmes      Alarme[]
+  parametro    Parametro @relation(fields: [id_parametro], references: [id_parametro])
+  
+  @@unique([id_parametro, data_hora])
+  @@map("medida")
+}
+
+model TipoAlerta {
+  id       Int      @id @default(autoincrement())
+  operador String   @db.VarChar(10)
+  valor    Decimal  @db.Decimal(10, 2)
+  alertas  Alerta[]
+
+  @@map("tipo_alerta")
+}
+
+model Alerta {
+  id_alerta      Int             @id @default(autoincrement())
+  titulo         String          @db.VarChar(255)
+  texto          String
+  data_hora      DateTime        @default(now())
+  id_tipo_alerta Int?
+  id_parametro   Int?
+  alarmes        Alarme[]
+  parametro      Parametro?      @relation(fields: [id_parametro], references: [id_parametro])
+  tipo_alerta    TipoAlerta?     @relation(fields: [id_tipo_alerta], references: [id])
+  alertaUsuarios AlertaUsuario[]
+
+  @@map("alerta")
+}
+
+model AlertaUsuario {
+  id_usuario Int
+  id_alerta  Int
+  created_at DateTime @default(now())
+  alerta     Alerta   @relation(fields: [id_alerta], references: [id_alerta])
+  usuario    Usuario  @relation(fields: [id_usuario], references: [id_usuario])
+
+  @@id([id_usuario, id_alerta])
+  @@map("alerta_usuario")
+}
+
+model Alarme {
+  id_usuario Int
+  id_medida  Int
+  id_alerta  Int
+  created_at DateTime @default(now())
+  alerta     Alerta   @relation(fields: [id_alerta], references: [id_alerta])
+  medida     Medida   @relation(fields: [id_medida], references: [id_medida])
+  usuario    Usuario  @relation(fields: [id_usuario], references: [id_usuario])
+
+  @@id([id_usuario, id_medida, id_alerta])
+  @@map("alarme")
+}
+
+model EstacaoStatus {
+  id_status  Int      @id @default(autoincrement())
+  status     Status
+  created_at DateTime @default(now())
+  id_estacao String
+  estacao    Estacao  @relation(fields: [id_estacao], references: [id_estacao])
+
+  @@map("estacao_status")
+}
+
+model EstacaoLog {
+  id_log     Int      @id @default(autoincrement())
+  data_sent  Int
+  created_at DateTime @default(now())
+  id_estacao String
+  estacao    Estacao  @relation(fields: [id_estacao], references: [id_estacao])
+
+  @@map("estacao_log")
+}
+
+model DataProcessingLog {
+  id_log     Int      @id @default(autoincrement())
+  created_at DateTime @default(now())
+
+  @@map("data_processing_log")
+}
+
+enum Operador {
+  MAIOR_QUE
+  MENOR_QUE
+  IGUAL
+  MENOR_IGUAL
+  MAIOR_IGUAL
+
+  @@map("operador")
+}
+
+enum Gravidade {
+  Alta
+  Media
+  Baixa
+
+  @@map("gravidade")
+}
+
+enum Status {
+  ONLINE
+  OFFLINE
+
+  @@map("estacaoStatus")
 }
