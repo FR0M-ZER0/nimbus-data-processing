@@ -1,15 +1,22 @@
 {
   "dependencies": {
     "@prisma/client": "^6.15.0",
-    "cors": "^2.8.5",
+    "axios": "^1.12.2",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "mongodb": "^6.20.0",
     "node-cron": "^4.2.1",
-    "pg": "^8.16.3",
-    "prisma": "^6.15.0"
+    "prisma": "^6.15.0",
+    "ws": "^8.18.3"
+  },
+    "scripts": {
+    "test": "vitest run --coverage --reporter=junit --outputFile=./test-results.xml --environment=node"
   },
   "type": "module",
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "@vitest/coverage-v8": "^4.0.4",
+    "jsdom": "^27.0.1",
+    "nodemon": "^3.1.10",
+    "vitest": "^4.0.4"
   }
 }
