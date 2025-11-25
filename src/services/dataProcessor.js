@@ -13,6 +13,23 @@ function sendWsMessage(message) {
   }
 }
 
+function verificaCondicao(valorMedida, operador, valorComparacao) {
+  switch (operador) {
+    case "MAIOR_QUE":
+      return valorMedida > valorComparacao;
+    case "MENOR_QUE":
+      return valorMedida < valorComparacao;
+    case "IGUAL":
+      return Number(valorMedida) === Number(valorComparacao);
+    case "MENOR_IGUAL":
+      return valorMedida <= valorComparacao;
+    case "MAIOR_IGUAL":
+      return valorMedida >= valorComparacao;
+    default:
+      return false;
+  }
+}
+
 export async function processDocument(doc, mongoCollection) {
   const { uid, uxt, readings } = doc;
   console.log(`[${uid}] Processando documento ${doc._id}...`);
@@ -69,9 +86,7 @@ export async function processDocument(doc, mongoCollection) {
   for (const [readingKey, readingValue] of Object.entries(readings)) {
     const idTipoParametro = tipoParametroMap.get(readingKey);
     if (!idTipoParametro) {
-      console.warn(
-        `[${uid}] Chave de leitura '${readingKey}' não mapeada. Pulando...`
-      );
+      console.warn(`[${uid}] Chave '${readingKey}' não mapeada. Pulando...`);
       continue;
     }
 
@@ -81,17 +96,48 @@ export async function processDocument(doc, mongoCollection) {
     });
 
     if (!parametro) {
-      console.warn(
-        `[${uid}] Parâmetro não encontrado (id_estacao: ${uid}, id_tipo_parametro: ${idTipoParametro}). Pulando...`
-      );
+      console.warn(`[${uid}] Parâmetro não encontrado. Pulando...`);
       continue;
     }
 
-    medidasParaCriar.push({
-      id_parametro: parametro.id_parametro,
-      valor: readingValue,
-      data_hora: dataHoraBigInt,
+    const medidaCriada = await prisma.medida.create({
+      data: {
+        id_parametro: parametro.id_parametro,
+        valor: readingValue,
+        data_hora: dataHoraBigInt,
+      },
     });
+
+    const alertas = await prisma.alerta.findMany({
+      where: { id_parametro: parametro.id_parametro },
+      include: { tipo_alerta: true },
+    });
+
+    for (const alerta of alertas) {
+      const condicaoAtendida = verificaCondicao(
+        readingValue,
+        alerta.tipo_alerta.operador,
+        alerta.tipo_alerta.valor
+      );
+
+      if (condicaoAtendida) {
+        console.log(`⚠️ Alerta ativado: ${alerta.titulo}`);
+
+        const usuarios = await prisma.alertaUsuario.findMany({
+          where: { id_alerta: alerta.id_alerta },
+        });
+
+        for (const usuario of usuarios) {
+          await prisma.alarme.create({
+            data: {
+              id_usuario: usuario.id_usuario,
+              id_medida: medidaCriada.id_medida,
+              id_alerta: alerta.id_alerta,
+            },
+          });
+        }
+      }
+    }
   }
 
   if (medidasParaCriar.length > 0) {
