@@ -5,11 +5,12 @@
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "mongodb": "^6.20.0",
+    "mqtt": "^5.14.1",
     "node-cron": "^4.2.1",
     "prisma": "^6.15.0",
     "ws": "^8.18.3"
   },
-    "scripts": {
+  "scripts": {
     "test": "vitest run --coverage --reporter=junit --outputFile=./test-results.xml --environment=node"
   },
   "type": "module",
