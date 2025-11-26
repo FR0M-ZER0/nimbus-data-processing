@@ -1,9 +1,14 @@
 import { prisma } from "../lib/prisma.js";
 import { getTipoParametrosFromStationId } from "./apiService.js";
 import WebSocket from "ws";
+import mqtt from "mqtt";
 
 const WS_URL = process.env.WS_URL
 const ws = new WebSocket(WS_URL)
+
+const brokerUrl = 'mqtt://broker.hivemq.com:1883';
+const topic = 'fatec/api/4dsm/sintax/cmd/EST001';
+const client = mqtt.connect(brokerUrl)
 
 function sendWsMessage(message) {
   if (ws.readyState === WebSocket.OPEN) {
@@ -146,6 +151,8 @@ export async function processDocument(doc, mongoCollection) {
 
           if (disparou) {
             console.log(`🚨 Alerta ${alerta.id_alerta} disparado para parâmetro ${id_parametro}`);
+
+            client.publish(topic, JSON.stringify({ uid: "EST001" }));
 
             for (const aUser of alerta.alertaUsuarios) {
               const id_usuario = aUser.id_usuario;
