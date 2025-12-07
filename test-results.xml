@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="0.0723774">
+    <testsuite name="src/tests/dataProcessor.test.js" timestamp="2025-11-25T23:55:24.387Z" hostname="Biel" tests="2" failures="0" errors="0" skipped="0" time="0.0163503">
+        <testcase classname="src/tests/dataProcessor.test.js" name="Serviço: DataProcessor &gt; Deve processar um documento e salvar medidas corretamente" time="0.0122294">
+            <system-out>
+[estacao-01] Processando documento mongo-id-123...
+
+📤 [estacao-01] Log de processamento enviado à API com sucesso.
+
+[estacao-01] Inseridos 2 novos registros de &apos;Medida&apos;.
+
+[estacao-01] Documento Mongo mongo-id-123 processado e removido.
+
+            </system-out>
+            <system-err>
+WebSocket não está pronto. Ignorando envio de mensagem...
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/tests/dataProcessor.test.js" name="Serviço: DataProcessor &gt; Deve ignorar leituras que não têm parâmetro configurado" time="0.001268">
+            <system-out>
+[estacao-02] Processando documento mongo-id-456...
+
+📤 [estacao-02] Log de processamento enviado à API com sucesso.
+
+            </system-out>
+            <system-err>
+WebSocket não está pronto. Ignorando envio de mensagem...
+
+[estacao-02] Chave de leitura &apos;chuva&apos; não mapeada. Pulando...
+[estacao-02] Nenhuma medida válida gerada. Removendo doc mongo-id-456 do Mongo.
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/healthCheck.test.js" timestamp="2025-11-25T23:55:24.392Z" hostname="Biel" tests="2" failures="0" errors="0" skipped="0" time="0.0508264">
+        <testcase classname="src/tests/healthCheck.test.js" name="API Health Check &gt; GET /api/health deve retornar 200 e JSON" time="0.0408292">
+        </testcase>
+        <testcase classname="src/tests/healthCheck.test.js" name="API Health Check &gt; Deve retornar 404 para rotas inexistentes" time="0.0071495">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/utils.test.js" timestamp="2025-11-25T23:55:24.393Z" hostname="Biel" tests="1" failures="0" errors="0" skipped="0" time="0.0052007">
+        <testcase classname="src/tests/utils.test.js" name="Testes Unitários de Processamento &gt; Exemplo: Deve validar matemática básica (Substitua pela sua lógica)" time="0.0025231">
+        </testcase>
+    </testsuite>
+</testsuites>
